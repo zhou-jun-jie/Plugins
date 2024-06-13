@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.maxvision.wifi'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+
+    compileOnly 'androidx.recyclerview:recyclerview:1.0.0'
+    compileOnly 'androidx.legacy:legacy-support-v4:1.0.0'
+    compileOnly 'androidx.appcompat:appcompat:1.0.0'
+    compileOnly 'com.alibaba:fastjson:1.2.83'
+
+    compileOnly fileTree(dir: '../uniapp/libs', include: ['uniapp-v8-release.aar'])
+
+    compileOnly 'com.alibaba:fastjson:1.1.46.android'
+}

@@ -1,0 +1,5 @@
+rootProject.name = "Plugins"
+include ':app'
+include ':uniplugin_mdns'
+include ':uniapp'
+include ':uniplugin_wifi'
