@@ -66,7 +66,7 @@ public class NsdHelper {
             @Override
             public void onServiceFound(NsdServiceInfo service) {
                 Log.e(TAG, "Service discovery success: " + service);
-                if (!service.getServiceType().equals(serviceType)) {
+                if (!service.getServiceType().startsWith(serviceType)) {
                     Log.e(TAG, "Unknown Service Type: " + service.getServiceType());
                 } else {
                     serviceQueue.add(service);

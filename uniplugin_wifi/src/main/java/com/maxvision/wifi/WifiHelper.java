@@ -11,6 +11,8 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 /**
@@ -22,7 +24,11 @@ public class WifiHelper {
 
     private static final String TAG = "WifiHelper";
 
-    public static void connectWifi(Context context,String ssid,String passkey) {
+    private Context context;
+    private WifiReceiver wifiReceiver;
+
+    public void connectWifi(Context context,String ssid,String passkey) {
+        this.context = context;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Log.e(TAG,"Android版本9以上连接:"+Build.VERSION.SDK_INT);
             connectToWifiAndroidQAndAbove(context,ssid,passkey);
@@ -32,7 +38,7 @@ public class WifiHelper {
         }
     }
 
-    private static void connectToWifi(Context context,String ssid, String passkey) {
+    private void connectToWifi(Context context,String ssid, String passkey) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         if (!wifiManager.isWifiEnabled()) {
@@ -43,12 +49,18 @@ public class WifiHelper {
         wifiConfig.SSID = String.format("\"%s\"", ssid);
         wifiConfig.preSharedKey = String.format("\"%s\"", passkey);
 
+        // 设置Wi-Fi网络优先级
+        wifiConfig.priority = 9999;
+        wifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+
         int netId = wifiManager.addNetwork(wifiConfig);
         wifiManager.disconnect();
         wifiManager.enableNetwork(netId, true);
         wifiManager.reconnect();
 
-        WifiReceiver wifiReceiver = new WifiReceiver();
+        if (wifiReceiver == null) {
+            wifiReceiver = new WifiReceiver();
+        }
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
@@ -56,7 +68,7 @@ public class WifiHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    private static void connectToWifiAndroidQAndAbove(Context context,String ssid, String password) {
+    private void connectToWifiAndroidQAndAbove(Context context,String ssid, String password) {
         WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
                 .setSsid(ssid)
                 .setWpa2Passphrase(password)
@@ -69,7 +81,7 @@ public class WifiHelper {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
-            public void onAvailable(Network network) {
+            public void onAvailable(@NonNull Network network) {
                 super.onAvailable(network);
                 connectivityManager.bindProcessToNetwork(network);
                 Log.i(TAG, "Connected to " + ssid);
@@ -82,7 +94,7 @@ public class WifiHelper {
             }
 
             @Override
-            public void onLost(Network network) {
+            public void onLost(@NonNull Network network) {
                 super.onLost(network);
                 connectivityManager.bindProcessToNetwork(null);
                 Log.e(TAG, "Lost connection to " + ssid);
@@ -91,5 +103,13 @@ public class WifiHelper {
         connectivityManager.requestNetwork(request, networkCallback);
     }
 
+
+    public void unregisterReceiver() {
+        try {
+            context.unregisterReceiver(wifiReceiver);
+        } catch (IllegalArgumentException e) {
+            // Receiver was probably already unregistered
+        }
+    }
 
 }

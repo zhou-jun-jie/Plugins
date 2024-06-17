@@ -53,4 +53,7 @@ dependencies {
     implementation project(':uniplugin_mdns')
     implementation project(':uniplugin_wifi')
 
+
+    implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
 }
+

@@ -1,8 +1,10 @@
 package com.maxvision.plugin.mdns;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,17 +27,24 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
     private StringBuilder sb;
     private TextView tvMdns;
 
+    private EditText etServiceType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mdns);
         tvMdns = findViewById(R.id.tv_mdns);
+        etServiceType = findViewById(R.id.et_serviceType);
         nsdHelper = new NsdHelper(this);
         nsdHelper.setResultListener(this);
     }
 
     public void start(View view) {
-        nsdHelper.discoverServices("_maxvision._tcp.");
+        String serviceType = "_maxvision._tcp.";
+        if (!TextUtils.isEmpty(etServiceType.getText().toString())) {
+            serviceType = etServiceType.getText().toString();
+        }
+        nsdHelper.discoverServices(serviceType);
     }
 
     public void stop(View view) {
@@ -46,7 +55,7 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
     public void onAllServicesResolved(List<NsdBean> services) {
         sb = new StringBuilder();
         for (NsdBean service : services) {
-            sb.append("名称:").append(service.serviceName).append(",host:").append(service.ipAddress).append("\n");
+            sb.append("名称:").append(service.serviceName).append(",host:").append(service.ipAddress).append(",sn:").append(service.attributes.mv_sn).append("\n");
             Log.e("result","监听的数据 service name:"+service.serviceName+",host:"+service.ipAddress+",port:"+service.port);
         }
         runOnUiThread(new Runnable() {
@@ -63,4 +72,5 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
         nsdHelper.stopDiscovery();
         super.onDestroy();
     }
+
 }

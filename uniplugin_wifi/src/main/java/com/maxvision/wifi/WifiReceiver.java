@@ -3,10 +3,16 @@ package com.maxvision.wifi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 /**
  * user: zjj
@@ -30,10 +36,9 @@ public class WifiReceiver extends BroadcastReceiver {
         } else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
             if (networkInfo != null && networkInfo.isConnected()) {
-                Log.i("WifiConnection", "Connected to Wi-Fi");
+                Log.i("WifiConnection", "Connected to Wi-Fi:"+ networkInfo.getState());
             }
         }
     }
-
 
 }
