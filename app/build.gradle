@@ -52,8 +52,12 @@ dependencies {
 
     implementation project(':uniplugin_mdns')
     implementation project(':uniplugin_wifi')
+    implementation project(':uniplugin_jmdns')
 
 
     implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")
+
+//    implementation "org.jmdns:jmdns:3.5.9"
+
 }
 

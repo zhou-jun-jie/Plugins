@@ -1,11 +1,18 @@
 package com.maxvision.mdns;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SyncContext;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,6 +40,7 @@ public class NsdHelper {
     private String serviceType = "_maxvision._tcp.";
     private final HashSet<String> resolvedServiceSet; // 用于存储已解析服务的唯一标识符
     private NsdBean nsdBean;
+    private Context context;
 
     public void setResultListener(ResolveResultListener resultListener) {
         this.resultListener = resultListener;
@@ -48,6 +56,7 @@ public class NsdHelper {
     }
 
     public NsdHelper(Context context, ResolveResultListener listener) {
+        this.context = context;
         nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
         resultListener = listener;
         serviceQueue = new LinkedList<>();
@@ -72,7 +81,11 @@ public class NsdHelper {
                     serviceQueue.add(service);
                     discoveredServicesCount++;
                     if (!resolveInProgress) {
-                        resolveNextService();
+                        new Handler(Looper.getMainLooper())
+                                .postDelayed(()-> {
+                                    resolveNextService();
+                                },1000);
+
                     }
                 }
             }
@@ -103,70 +116,111 @@ public class NsdHelper {
         };
     }
 
-    private synchronized void resolveNextService() {
-        if (serviceQueue.isEmpty()) {
-            resolveInProgress = false;
-            if (discoveredServicesCount > 0 && resolvedServices.size() == discoveredServicesCount) {
-                if (resultListener != null) {
-                    resultListener.onAllServicesResolved(new ArrayList<>(resolvedServices));
-                }
-            }
-            return;
-        }
-        resolveInProgress = true;
-        NsdServiceInfo serviceInfo = serviceQueue.poll();
-        NsdManager.ResolveListener resolveListener = new NsdManager.ResolveListener() {
-            @Override
-            public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Log.e(TAG, "Resolve failed: " + errorCode);
-                resolveInProgress = false;
-                resolveNextService();
-            }
+    private int discoverCount = 0;
 
-            @Override
-            public void onServiceResolved(NsdServiceInfo serviceInfo) {
-                Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
-                String host = serviceInfo.getHost().getHostAddress();
-                int port = serviceInfo.getPort();
-                Log.d(TAG, "Host: " + host + ", Port: " + port);
-                // 这里可以进一步处理解析到的服务，例如连接到服务
+    private synchronized void resolveNextService() {
+            if (serviceQueue.isEmpty()) {
                 resolveInProgress = false;
-                String uniqueServiceIdentifier = serviceInfo.getServiceName() + serviceInfo.getHost().getHostAddress();
-                if (!resolvedServiceSet.contains(uniqueServiceIdentifier)) {
-                    resolvedServiceSet.add(uniqueServiceIdentifier);
-                    nsdBean = new NsdBean();
-                    if (host != null) {
-                        nsdBean.ipAddress = host.replace("/", "");
-                    }
-                    nsdBean.port = port;
-                    nsdBean.serviceType = serviceType;
-                    nsdBean.serviceName = serviceInfo.getServiceName();
-                    nsdBean.attributes = new NsdBean.AttributesDTO();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        if (!serviceInfo.getAttributes().isEmpty()) {
-                            Map<String, byte[]> attributes = serviceInfo.getAttributes();
-                            for (Map.Entry<String, byte[]> entry : attributes.entrySet()) {
-                                String key = entry.getKey();
-                                byte[] value = entry.getValue();
-                                Log.e("result", "key:" + key + ",value:" + value);
-                                if ("mv_sn".equals(key) && value != null) {
-                                    nsdBean.attributes.mv_sn = new String(value);
-                                }
-                                if ("mv_type".equals(key) && value != null) {
-                                    nsdBean.attributes.mv_type = new String(value);
-                                }
-                            }
+//            if (discoveredServicesCount > 0) {
+                if (resolvedServices.size() == discoveredServicesCount) {
+                    if (resultListener != null) {
+                        // todo 判断
+                        discoveredServicesCount = 0;
+                        resultListener.onAllServicesResolved(new ArrayList<>(resolvedServices));
+                        // todo 自动停止搜索
+                        if (discoverCount <= 60) {
+                            // 再次开启搜索
+                            resolvedServices.clear();
+                            Activity activity = (Activity) context;
+                            activity.runOnUiThread(() -> {
+                                nsdManager.stopServiceDiscovery(discoveryListener);
+                                discoveryStarted = false;
+                                discoverCount++;
+                                SystemClock.sleep(3000);
+                                discoverServices(serviceType);
+                            });
+                        } else {
+                            discoverCount = 0;
                         }
                     }
-                    Log.e(TAG, "组装后的数据:" + nsdBean.toString());
-                    resolvedServices.add(nsdBean);
-                } else {
-                    Log.d(TAG, "Duplicate service ignored: " + serviceInfo.getServiceName());
                 }
-                resolveNextService();
+//            }
+                return;
             }
-        };
-        nsdManager.resolveService(serviceInfo, resolveListener);
+            resolveInProgress = true;
+            NsdServiceInfo serviceInfo = serviceQueue.poll();
+            NsdManager.ResolveListener resolveListener = new NsdManager.ResolveListener() {
+                @Override
+                public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+                    Log.e(TAG, "Resolve failed: " + errorCode);
+                    resolveInProgress = false;
+                    resolveNextService();
+                }
+
+                @Override
+                public void onServiceResolved(NsdServiceInfo serviceInfo) {
+                    Log.d(TAG, "Resolve Succeeded. " + serviceInfo);
+                    String host = serviceInfo.getHost().getHostAddress();
+                    int port = serviceInfo.getPort();
+                    Log.d(TAG, "Host: " + host + ", Port: " + port);
+                    // 这里可以进一步处理解析到的服务，例如连接到服务
+                    resolveInProgress = false;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        String uniqueServiceIdentifier = serviceInfo.getHost().getHostAddress();
+                        byte[] mvSns = serviceInfo.getAttributes().get("mv_sn");
+                        String sn = "";
+                        if (mvSns != null) {
+                            sn = new String(mvSns, StandardCharsets.UTF_8);
+                            Log.e(TAG,"sn:"+sn);
+                        } else {
+                            Log.e(TAG,"sn: 为null");
+                            discoveredServicesCount--;
+                            resolveNextService();
+                            return;
+                        }
+                        if (!TextUtils.isEmpty(sn)) {
+                            uniqueServiceIdentifier = uniqueServiceIdentifier + sn;
+
+                        }
+                        Log.e(TAG,"unique:"+uniqueServiceIdentifier);
+
+                        if (!resolvedServiceSet.contains(uniqueServiceIdentifier)) {
+                            resolvedServiceSet.add(uniqueServiceIdentifier);
+                            nsdBean = new NsdBean();
+                            if (host != null) {
+                                nsdBean.ipAddress = host.replace("/", "");
+                            }
+                            nsdBean.port = port;
+                            nsdBean.serviceType = serviceType;
+                            nsdBean.serviceName = serviceInfo.getServiceName();
+                            nsdBean.attributes = new NsdBean.AttributesDTO();
+
+                            if (!serviceInfo.getAttributes().isEmpty()) {
+                                Map<String, byte[]> attributes = serviceInfo.getAttributes();
+                                for (Map.Entry<String, byte[]> entry : attributes.entrySet()) {
+                                    String key = entry.getKey();
+                                    byte[] value = entry.getValue();
+                                    Log.e("result", "key:" + key + ",value:" + value);
+                                    if ("mv_sn".equals(key) && value != null) {
+                                        nsdBean.attributes.mv_sn = new String(value, StandardCharsets.UTF_8);
+                                    }
+                                    if ("mv_type".equals(key) && value != null) {
+                                        nsdBean.attributes.mv_type = new String(value);
+                                    }
+                                }
+                            }
+                            Log.e(TAG, "组装后的数据:" + nsdBean.toString());
+                            resolvedServices.add(nsdBean);
+                        } else {
+                            discoveredServicesCount--;
+                            Log.d(TAG, "Duplicate service ignored: " + serviceInfo.getServiceName());
+                        }
+                    }
+                    resolveNextService();
+                }
+            };
+            nsdManager.resolveService(serviceInfo, resolveListener);
+
     }
 
     public void discoverServices(String serviceType) {

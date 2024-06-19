@@ -1,6 +1,7 @@
 package com.maxvision.plugin.mdns;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,7 @@ import com.maxvision.mdns.NsdBean;
 import com.maxvision.mdns.NsdHelper;
 import com.maxvision.plugin.R;
 
+import java.util.Formattable;
 import java.util.List;
 
 /**
@@ -24,7 +26,7 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
 
     private NsdHelper nsdHelper;
 
-    private StringBuilder sb;
+    private StringBuilder sb = new StringBuilder();;
     private TextView tvMdns;
 
     private EditText etServiceType;
@@ -35,12 +37,15 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
         setContentView(R.layout.activity_mdns);
         tvMdns = findViewById(R.id.tv_mdns);
         etServiceType = findViewById(R.id.et_serviceType);
-        nsdHelper = new NsdHelper(this);
-        nsdHelper.setResultListener(this);
+
     }
 
     public void start(View view) {
-        String serviceType = "_maxvision._tcp.";
+        nsdHelper = new NsdHelper(this);
+        sb.delete(0,sb.toString().length());
+        tvMdns.setText("");
+        nsdHelper.setResultListener(this);
+        String serviceType = "_tcp.local.";
         if (!TextUtils.isEmpty(etServiceType.getText().toString())) {
             serviceType = etServiceType.getText().toString();
         }
@@ -53,18 +58,19 @@ public class MdnsActivity extends AppCompatActivity implements NsdHelper.Resolve
 
     @Override
     public void onAllServicesResolved(List<NsdBean> services) {
-        sb = new StringBuilder();
+
         for (NsdBean service : services) {
             sb.append("名称:").append(service.serviceName).append(",host:").append(service.ipAddress).append(",sn:").append(service.attributes.mv_sn).append("\n");
-            Log.e("result","监听的数据 service name:"+service.serviceName+",host:"+service.ipAddress+",port:"+service.port);
+            Log.e("result", "监听的数据 service name:" + service.serviceName + ",host:" + service.ipAddress + ",sn:" + service.attributes.mv_sn);
         }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.e("result","设置文本:"+sb.toString());
                 tvMdns.setText(sb.toString());
+
             }
         });
-
     }
 
     @Override

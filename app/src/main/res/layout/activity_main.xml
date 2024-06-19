@@ -9,6 +9,12 @@
     tools:context=".MainActivity">
 
     <Button
+        android:text="Udp界面"
+        android:onClick="udp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
         android:text="Mdns界面"
         android:onClick="mdns"
         android:layout_width="match_parent"
