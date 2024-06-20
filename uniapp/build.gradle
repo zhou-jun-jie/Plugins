@@ -1,13 +1,9 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.maxvision.uniapp'
-    compileSdk 34
-
+    compileSdkVersion 30
     defaultConfig {
-        applicationId "com.maxvision.uniapp"
+        applicationId "com.android.zjj"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -16,15 +12,28 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        config {
+            keyAlias 'myalias'
+            keyPassword '123456'
+            storeFile file('../test.jks')
+            storePassword '123456'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+
     buildTypes {
-        release {
+        debug {
+            signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        release {
+            signingConfig signingConfigs.config
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
     aaptOptions {
         additionalParameters '--auto-add-overlay'
@@ -50,4 +59,10 @@ dependencies {
     implementation "androidx.fragment:fragment:1.1.0"
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
+
+    implementation project(':uniplugin_jmdns')
+//    implementation 'com.google.android.material:material:1.12.0'
+//    implementation 'androidx.activity:activity:1.9.0'
+//    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
+

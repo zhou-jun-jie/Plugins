@@ -1,13 +1,14 @@
 package javax.jmdns.impl.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This class contains all the byte shifting 
@@ -16,7 +17,7 @@ import java.util.Map;
  *
  */
 public class ByteWrangler {
-    private static Logger logger = LoggerFactory.getLogger(ByteWrangler.class);
+//    private static Logger logger = LoggerFactory.getLogger(ByteWrangler.class);
 
     /**
      * Maximum number of bytes a value can consist of.
@@ -141,7 +142,7 @@ public class ByteWrangler {
                     }
                     byte data[] = out2.toByteArray();
                     if (data.length > MAX_VALUE_LENGTH) {
-                        logger.warn("Cannot have individual values larger that 255 chars. Offending value: {}", key + (val == null ? "" : "=" + val));
+//                        logger.warn("Cannot have individual values larger that 255 chars. Offending value: {}", key + (val == null ? "" : "=" + val));
                         return EMPTY_TXT;
                     }
                     out.write((byte) data.length);
@@ -162,7 +163,7 @@ public class ByteWrangler {
         writeUTF(out2, text);
         final byte data[] = out2.toByteArray();
         if (data.length > MAX_VALUE_LENGTH) {
-            logger.warn("Cannot have individual values larger that 255 chars. Offending value: {}", text);
+//            logger.warn("Cannot have individual values larger that 255 chars. Offending value: {}", text);
             return EMPTY_TXT;
         }
         out.write((byte) data.length);

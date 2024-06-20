@@ -4,11 +4,12 @@
 
 package javax.jmdns.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.util.logging.Logger;
 
 import javax.jmdns.impl.constants.DNSConstants;
 
@@ -16,7 +17,7 @@ import javax.jmdns.impl.constants.DNSConstants;
  * Listen for multicast packets.
  */
 class SocketListener extends Thread {
-    static Logger logger = LoggerFactory.getLogger(SocketListener.class);
+//    static Logger logger = LoggerFactory.getLogger(SocketListener.class);
 
     /**
      *
@@ -39,7 +40,7 @@ class SocketListener extends Thread {
                 // in order to allow other threads to get some cpu time
                 Thread.sleep(_jmDNSImpl._threadSleepDurationMs);
             } catch (InterruptedException e) {
-                logger.warn(this.getName() + ".run() interrupted ", e);
+//                logger.warn(this.getName() + ".run() interrupted ", e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -65,9 +66,9 @@ class SocketListener extends Thread {
 
                     DNSIncoming msg = new DNSIncoming(packet);
                     if (msg.isValidResponseCode()) {
-                        if (logger.isTraceEnabled()) {
-                            logger.trace("{}.run() JmDNS in:{}", this.getName(), msg.print(true));
-                        }
+//                        if (logger.isTraceEnabled()) {
+//                            logger.trace("{}.run() JmDNS in:{}", this.getName(), msg.print(true));
+//                        }
                         if (msg.isQuery()) {
                             // When we have a QUERY, unique means that QU is true and we should respond to the sender directly
                             if (msg.getQuestions().stream().anyMatch(DNSEntry::isUnique)) {
@@ -81,21 +82,21 @@ class SocketListener extends Thread {
                             this._jmDNSImpl.handleResponse(msg);
                         }
                     } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("{}.run() JmDNS in message with error code: {}", this.getName(), msg.print(true));
-                        }
+//                        if (logger.isDebugEnabled()) {
+//                            logger.debug("{}.run() JmDNS in message with error code: {}", this.getName(), msg.print(true));
+//                        }
                     }
                 } catch (IOException e) {
-                    logger.warn(this.getName() + ".run() exception ", e);
+//                    logger.warn(this.getName() + ".run() exception ", e);
                 }
             }
         } catch (IOException e) {
             if (!this._jmDNSImpl.isCanceling() && !this._jmDNSImpl.isCanceled() && !this._jmDNSImpl.isClosing() && !this._jmDNSImpl.isClosed()) {
-                logger.warn(this.getName() + ".run() exception ", e);
+//                logger.warn(this.getName() + ".run() exception ", e);
                 this._jmDNSImpl.recover();
             }
         }
-        logger.trace("{}.run() exiting.", this.getName());
+//        logger.trace("{}.run() exiting.", this.getName());
     }
 
     public JmDNSImpl getDns() {

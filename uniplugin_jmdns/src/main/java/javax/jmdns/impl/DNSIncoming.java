@@ -4,8 +4,8 @@
 
 package javax.jmdns.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import javax.jmdns.impl.constants.DNSResultCode;
  * @author Arthur van Hoff, Werner Randelshofer, Pierre Frisch, Daniel Bobbert
  */
 public final class DNSIncoming extends DNSMessage {
-    private static Logger logger                                = LoggerFactory.getLogger(DNSIncoming.class);
+//    private static Logger logger                                = LoggerFactory.getLogger(DNSIncoming.class);
 
     // This is a hack to handle a bug in the BonjourConformanceTest
     // It is sending out target strings that don't follow the "domain name" format.
@@ -138,10 +138,10 @@ public final class DNSIncoming extends DNSMessage {
                         int index = (DNSLabel.labelValue(len) << 8) | this.readUnsignedByte();
                         String compressedLabel = _names.get(Integer.valueOf(index));
                         if (compressedLabel == null) {
-                            logger.warn("Bad domain name: possible circular name detected. Bad offset: 0x{} at 0x{}",
-                                    Integer.toHexString(index),
-                                    Integer.toHexString(pos - 2)
-                                    );
+//                            logger.warn("Bad domain name: possible circular name detected. Bad offset: 0x{} at 0x{}",
+//                                    Integer.toHexString(index),
+//                                    Integer.toHexString(pos - 2)
+//                                    );
                             compressedLabel = "";
                         }
                         sb.append(compressedLabel);
@@ -152,11 +152,11 @@ public final class DNSIncoming extends DNSMessage {
                         break;
                     case Extended:
                         // int extendedLabelClass = DNSLabel.labelValue(len);
-                        logger.debug("Extended label are not currently supported.");
+//                        logger.debug("Extended label are not currently supported.");
                         break;
                     case Unknown:
                     default:
-                        logger.warn("Unsupported DNS label type: '{}'", Integer.toHexString(len & 0xC0) );
+//                        logger.warn("Unsupported DNS label type: '{}'", Integer.toHexString(len & 0xC0) );
                 }
             }
             for (final Map.Entry<Integer, StringBuilder> entry : names.entrySet()) {
@@ -206,12 +206,12 @@ public final class DNSIncoming extends DNSMessage {
             int numAuthorities = _messageInputStream.readUnsignedShort();
             int numAdditionals = _messageInputStream.readUnsignedShort();
 
-            logger.debug("DNSIncoming() questions:{} answers:{} authorities:{} additionals:{}",
-                    numQuestions,
-                    numAnswers,
-                    numAuthorities,
-                    numAdditionals
-            );
+//            logger.debug("DNSIncoming() questions:{} answers:{} authorities:{} additionals:{}",
+//                    numQuestions,
+//                    numAnswers,
+//                    numAuthorities,
+//                    numAdditionals
+//            );
 
             // We need some sanity checks
             // A question is at least 5 bytes and answer 11 so check what we have
@@ -262,7 +262,7 @@ public final class DNSIncoming extends DNSMessage {
                 throw new IOException("Received a message with the wrong length.");
             }
         } catch (Exception e) {
-            logger.warn("DNSIncoming() dump " + print(true) + "\n exception ", e);
+//            logger.warn("DNSIncoming() dump " + print(true) + "\n exception ", e);
             // This ugly but some JVM don't implement the cause on IOException
             IOException ioe = new IOException("DNSIncoming corrupted message");
             ioe.initCause(e);
@@ -271,7 +271,7 @@ public final class DNSIncoming extends DNSMessage {
             try {
                 _messageInputStream.close();
             } catch (Exception e) { 
-            	logger.warn("MessageInputStream close error");
+//            	logger.warn("MessageInputStream close error");
             }
         }
     }
@@ -302,7 +302,7 @@ public final class DNSIncoming extends DNSMessage {
         String domain = _messageInputStream.readName();
         DNSRecordType type = DNSRecordType.typeForIndex(_messageInputStream.readUnsignedShort());
         if (type == DNSRecordType.TYPE_IGNORE) {
-            logger.warn("Could not find record type: {}", this.print(true));
+//            logger.warn("Could not find record type: {}", this.print(true));
         }
         int recordClassIndex = _messageInputStream.readUnsignedShort();
         DNSRecordClass recordClass = DNSRecordClass.classForIndex(recordClassIndex);
@@ -314,12 +314,12 @@ public final class DNSIncoming extends DNSMessage {
         String domain = _messageInputStream.readName();
         DNSRecordType type = DNSRecordType.typeForIndex(_messageInputStream.readUnsignedShort());
         if (type == DNSRecordType.TYPE_IGNORE) {
-            logger.warn("Could not find record type. domain: {}\n{}", domain, this.print(true));
+//            logger.warn("Could not find record type. domain: {}\n{}", domain, this.print(true));
         }
         int recordClassIndex = _messageInputStream.readUnsignedShort();
         DNSRecordClass recordClass = (type == DNSRecordType.TYPE_OPT ? DNSRecordClass.CLASS_UNKNOWN : DNSRecordClass.classForIndex(recordClassIndex));
         if ((recordClass == DNSRecordClass.CLASS_UNKNOWN) && (type != DNSRecordType.TYPE_OPT)) {
-            logger.warn("Could not find record class. domain: {} type: {}\n{}", domain, type, this.print(true));
+//            logger.warn("Could not find record class. domain: {} type: {}\n{}", domain, type, this.print(true));
         }
         boolean unique = recordClass.isUnique(recordClassIndex);
         int ttl = _messageInputStream.readInt();
@@ -333,7 +333,7 @@ public final class DNSIncoming extends DNSMessage {
             case TYPE_AAAA: // IPv6
                 byte[] incomingBytes =  _messageInputStream.readBytes(len);
                 if (isIPv4MappedIPv6Address(incomingBytes)) {
-                    logger.warn("AAAA record with IPv4-mapped address for {}", domain);
+//                    logger.warn("AAAA record with IPv4-mapped address for {}", domain);
                 } else {
                     rec = new DNSRecord.IPv6Address(domain, recordClass, unique, ttl, incomingBytes);
                 }
@@ -345,7 +345,7 @@ public final class DNSIncoming extends DNSMessage {
                 if (service.length() > 0) {
                     rec = new DNSRecord.Pointer(domain, recordClass, unique, ttl, service);
                 } else {
-                    logger.warn("PTR record of class: {}, there was a problem reading the service name of the answer for domain: {}", recordClass, domain);
+//                    logger.warn("PTR record of class: {}, there was a problem reading the service name of the answer for domain: {}", recordClass, domain);
                 }
                 break;
             case TYPE_TXT:
@@ -387,14 +387,14 @@ public final class DNSIncoming extends DNSMessage {
                             optionCodeInt = _messageInputStream.readUnsignedShort();
                             optionCode = DNSOptionCode.resultCodeForFlags(optionCodeInt);
                         } else {
-                            logger.warn("There was a problem reading the OPT record. Ignoring.");
+//                            logger.warn("There was a problem reading the OPT record. Ignoring.");
                             break;
                         }
                         int optionLength = 0;
                         if (_messageInputStream.available() >= 2) {
                             optionLength = _messageInputStream.readUnsignedShort();
                         } else {
-                            logger.warn("There was a problem reading the OPT record. Ignoring.");
+//                            logger.warn("There was a problem reading the OPT record. Ignoring.");
                             break;
                         }
                         byte[] optiondata = new byte[0];
@@ -433,34 +433,34 @@ public final class DNSIncoming extends DNSMessage {
                                         ownerPassword = new byte[] { optiondata[14], optiondata[15], optiondata[16], optiondata[17], optiondata[18], optiondata[19], optiondata[20], optiondata[21] };
                                     }
                                 } catch (Exception exception) {
-                                    logger.warn("Malformed OPT answer. Option code: Owner data: {}", this._hexString(optiondata));
+//                                    logger.warn("Malformed OPT answer. Option code: Owner data: {}", this._hexString(optiondata));
                                 }
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Unhandled Owner OPT version: {} sequence: {} MAC address: {} {}{} {}{}",
-                                            ownerVersion,
-                                            ownerSequence,
-                                            this._hexString(ownerPrimaryMacAddress),
-                                            (ownerWakeupMacAddress != ownerPrimaryMacAddress ? " wakeup MAC address: " : ""),
-                                            (ownerWakeupMacAddress != ownerPrimaryMacAddress ? this._hexString(ownerWakeupMacAddress) : ""),
-                                            (ownerPassword != null ? " password: ": ""),
-                                            (ownerPassword != null ? this._hexString(ownerPassword) : "")
-                                    );
-                                }
+//                                if (logger.isDebugEnabled()) {
+//                                    logger.debug("Unhandled Owner OPT version: {} sequence: {} MAC address: {} {}{} {}{}",
+//                                            ownerVersion,
+//                                            ownerSequence,
+//                                            this._hexString(ownerPrimaryMacAddress),
+//                                            (ownerWakeupMacAddress != ownerPrimaryMacAddress ? " wakeup MAC address: " : ""),
+//                                            (ownerWakeupMacAddress != ownerPrimaryMacAddress ? this._hexString(ownerWakeupMacAddress) : ""),
+//                                            (ownerPassword != null ? " password: ": ""),
+//                                            (ownerPassword != null ? this._hexString(ownerPassword) : "")
+//                                    );
+//                                }
                                 break;
                             case LLQ:
                             case NSID:
                             case UL:
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("There was an OPT answer. Option code: {} data: {}", optionCode, this._hexString(optiondata));
-                                }
+//                                if (logger.isDebugEnabled()) {
+//                                    logger.debug("There was an OPT answer. Option code: {} data: {}", optionCode, this._hexString(optiondata));
+//                                }
                                 break;
                             case Unknown:
-                                if (optionCodeInt >= 65001 && optionCodeInt <= 65534) {
-                                     // RFC 6891 defines this range as used for experimental/local purposes.
-                                    logger.debug("There was an OPT answer using an experimental/local option code: {} data: {}", optionCodeInt, this._hexString(optiondata));
-                                } else {
-                                    logger.warn("There was an OPT answer. Not currently handled. Option code: {} data: {}", optionCodeInt, this._hexString(optiondata));
-                                }
+//                                if (optionCodeInt >= 65001 && optionCodeInt <= 65534) {
+//                                     // RFC 6891 defines this range as used for experimental/local purposes.
+//                                    logger.debug("There was an OPT answer using an experimental/local option code: {} data: {}", optionCodeInt, this._hexString(optiondata));
+//                                } else {
+//                                    logger.warn("There was an OPT answer. Not currently handled. Option code: {} data: {}", optionCodeInt, this._hexString(optiondata));
+//                                }
                                 break;
                             default:
                                 // This is to keep the compiler happy.
@@ -468,11 +468,11 @@ public final class DNSIncoming extends DNSMessage {
                         }
                     }
                 } else {
-                    logger.warn("There was an OPT answer. Wrong version number: {} result code: {}", version, extendedResultCode);
+//                    logger.warn("There was an OPT answer. Wrong version number: {} result code: {}", version, extendedResultCode);
                 }
                 break;
             default:
-                    logger.debug("DNSIncoming() unknown type: {}", type);
+//                    logger.debug("DNSIncoming() unknown type: {}", type);
                 _messageInputStream.skip(len);
                 break;
         }

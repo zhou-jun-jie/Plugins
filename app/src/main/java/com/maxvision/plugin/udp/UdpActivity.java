@@ -43,7 +43,7 @@ public class UdpActivity extends AppCompatActivity implements MdnsHelper.MdnsLis
         textView.setText("");
         sb = new StringBuilder();
         mdnsHelper.setMdnsListener(this);
-        mdnsHelper.startDiscovery("_maxvision._tcp.local.");
+        mdnsHelper.startDiscovery();
     }
 
     public void http(View view) {
@@ -52,10 +52,6 @@ public class UdpActivity extends AppCompatActivity implements MdnsHelper.MdnsLis
     }
 
     public void stop(View view) {
-        mdnsHelper.test.forEach(s -> {
-            Log.e("zjj_ip",s);
-        });
-
         mdnsHelper.stopDiscovery();
     }
 

@@ -21,13 +21,16 @@ public class MdnsBean {
         public String reply;
         public String code;
 
+        public String errorMsg;
+
         @Override
         public String toString() {
             return "AttributesDTO{" +
                     "mv_sn='" + mv_sn + '\'' +
-                    ", mv_type='" + mv_type + '\'' +
+                    ", mv_type=" + mv_type +
                     ", reply='" + reply + '\'' +
                     ", code='" + code + '\'' +
+                    ", errorMsg='" + errorMsg + '\'' +
                     '}';
         }
     }

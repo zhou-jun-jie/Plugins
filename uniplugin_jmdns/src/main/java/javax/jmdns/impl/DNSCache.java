@@ -4,8 +4,8 @@
 
 package javax.jmdns.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +44,7 @@ import javax.jmdns.impl.constants.DNSRecordType;
  */
 public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
 
-    private static Logger       logger              = LoggerFactory.getLogger(DNSCache.class);
+//    private static Logger       logger              = LoggerFactory.getLogger(DNSCache.class);
 
     private static final long   serialVersionUID    = 3024739453186759259L;
 
@@ -297,11 +297,11 @@ public class DNSCache extends ConcurrentHashMap<String, List<DNSEntry>> {
      * Prints the content of the cache to the {@link #logger}.
      */
     public void logCachedContent() {
-        if (!logger.isTraceEnabled()) {
-            return;
-        }
-
-        logger.trace("Cached DNSEntries: {}", toString());
+//        if (!logger.isTraceEnabled()) {
+//            return;
+//        }
+//
+//        logger.trace("Cached DNSEntries: {}", toString());
     }
 
 }

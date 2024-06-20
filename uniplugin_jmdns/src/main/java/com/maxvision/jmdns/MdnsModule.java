@@ -29,11 +29,12 @@ public class MdnsModule extends UniModule {
     }
 
     // 查询发现
-    @UniJSMethod()
+    @UniJSMethod(uiThread = false)
     public void startDiscovery(String serviceType) {
         if (mdnsHelper == null) {
             return;
         }
+        mdnsHelper.setMdnsListener(resultListener);
         mdnsHelper.startDiscovery(serviceType);
     }
 
@@ -44,7 +45,6 @@ public class MdnsModule extends UniModule {
         } else if (mUniSDKInstance != null && mUniSDKInstance.getContext() instanceof Activity) {
             // 初始化
             mdnsHelper = new MdnsHelper(mUniSDKInstance.getContext());
-            mdnsHelper.setMdnsListener(resultListener);
             Log.d(TAG, "Discoverer created");
             return true;
         } else {
@@ -53,7 +53,7 @@ public class MdnsModule extends UniModule {
     }
 
     // 停止搜索
-    @UniJSMethod()
+    @UniJSMethod(uiThread = false)
     public void stopDiscovery() {
         if (null != mdnsHelper) {
             mdnsHelper.stopDiscovery();

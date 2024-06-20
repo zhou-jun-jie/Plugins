@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpRequestQueueManager {
-    private static final String TAG = "HttpRequestQueueManager";
+    private static final String TAG = "zjj_http";
     private static final int MAX_RETRY_COUNT = 3;
     private static final int REQUEST_INTERVAL_MS = 1000;  // 请求间隔时间，单位为毫秒
 
@@ -76,7 +76,7 @@ public class HttpRequestQueueManager {
             if (requestWrapper.callback != null && response.body() != null) {
                 requestWrapper.callback.onResponse(response.body().string());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Request failed: " + requestWrapper.url, e);
             if (requestWrapper.retryCount < MAX_RETRY_COUNT) {
                 requestWrapper.retryCount++;
