@@ -3,7 +3,7 @@ package com.maxvision.jmdns;
 /**
  * user: zjj
  * date: 2024/6/11
- * desc: 封装的实体类
+ * desc: 给uni封装的实体类
  */
 public class MdnsBean {
 

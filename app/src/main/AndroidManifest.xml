@@ -39,9 +39,6 @@
         <activity android:name=".wifi.WifiActivity" />
         <activity android:name=".udp.UdpActivity" />
 
-        <service android:name=".udp.UDPReceiverService" />
-        <service android:name=".udp.UDPSenderService" />
-
     </application>
 
 </manifest>

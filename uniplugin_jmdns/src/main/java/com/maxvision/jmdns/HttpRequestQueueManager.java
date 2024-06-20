@@ -2,16 +2,22 @@ package com.maxvision.jmdns;
 
 import android.util.Log;
 
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * user: zjj
+ * date: 2024/6/19
+ * desc: http请求类
+ */
 public class HttpRequestQueueManager {
     private static final String TAG = "zjj_mdns";
     private static final int MAX_RETRY_COUNT = 3;

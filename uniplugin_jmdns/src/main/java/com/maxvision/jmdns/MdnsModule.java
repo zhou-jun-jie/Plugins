@@ -12,7 +12,7 @@ import io.dcloud.feature.uniapp.common.UniModule;
 /**
  * user: zjj
  * date: 2024/6/7
- * desc: 描述
+ * desc: uni交互类
  */
 public class MdnsModule extends UniModule {
 

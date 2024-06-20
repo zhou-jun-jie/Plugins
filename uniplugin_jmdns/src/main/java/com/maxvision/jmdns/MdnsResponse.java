@@ -3,7 +3,7 @@ package com.maxvision.jmdns;
 /**
  * user: zjj
  * date: 2024/6/19
- * desc: 描述
+ * desc: http接口获取sn信息实体类
  */
 public class MdnsResponse {
 
