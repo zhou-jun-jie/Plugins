@@ -7,6 +7,8 @@ package javax.jmdns.impl;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.Inet4Address;
@@ -905,6 +907,7 @@ public class JmDNSImpl extends JmDNS implements DNSStatefulObject, DNSTaskStarte
                     listCopy = new ArrayList<ServiceListenerStatus>(list);
                 }
                 for (final ServiceListenerStatus listener : listCopy) {
+                    if (_executor.isShutdown()) break;
                     _executor.submit(new Runnable() {
                         /** {@inheritDoc} */
                         @Override

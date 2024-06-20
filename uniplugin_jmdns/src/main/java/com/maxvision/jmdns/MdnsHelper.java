@@ -5,7 +5,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.alibaba.fastjson.JSON;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -13,6 +15,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashSet;
+
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
@@ -74,7 +77,7 @@ public class MdnsHelper {
                 // 添加服务监听器
                 jmdns.addServiceListener(serviceType, new SampleListener());
             } catch (IOException e) {
-                Log.e(TAG,"异常:"+e.getMessage());
+                Log.e(TAG, "异常:" + e.getMessage());
             }
         }).start();
     }
@@ -113,15 +116,21 @@ public class MdnsHelper {
     }
 
     public void stopDiscovery() {
-        new Thread(() -> {
+        Thread thread = new Thread(() -> {
             if (jmdns != null) {
                 try {
                     jmdns.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
-        }).start();
+        });
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        thread.start();
 
         resolvedServiceSet.clear();
         httpRequestQueueManager.stop();
@@ -155,18 +164,19 @@ public class MdnsHelper {
         httpRequestQueueManager.addRequest(url, new HttpRequestQueueManager.HttpResponseCallback() {
             @Override
             public void onResponse(String response) {
+                Log.e(TAG, "详细数据 url:" + url + ",response," + response);
                 MdnsResponse mdnsResponse = JSON.parseObject(response, MdnsResponse.class);
                 MdnsResponse.DataDTO data = mdnsResponse.data;
                 if (data != null /*&& !TextUtils.isEmpty(data.sn)*/) {
-                    MdnsBean mdnsBean = new MdnsBean();
-                    mdnsBean.ipAddress = ip;
-                    mdnsBean.port = serviceInfo.getPort();
-                    mdnsBean.serviceType = serviceInfo.getType();
-                    mdnsBean.serviceName = serviceInfo.getName();
-                    mdnsBean.attributes = new MdnsBean.AttributesDTO();
-                    mdnsBean.attributes.mv_sn = data.sn;
-                    mdnsBean.attributes.mv_type = data.type;
                     if (null != mdnsListener) {
+                        MdnsBean mdnsBean = new MdnsBean();
+                        mdnsBean.ipAddress = ip;
+                        mdnsBean.port = serviceInfo.getPort();
+                        mdnsBean.serviceType = serviceInfo.getType();
+                        mdnsBean.serviceName = serviceInfo.getName();
+                        mdnsBean.attributes = new MdnsBean.AttributesDTO();
+                        mdnsBean.attributes.mv_sn = data.sn;
+                        mdnsBean.attributes.mv_type = data.type;
                         mdnsListener.onServiceResolved(mdnsBean);
                     }
                 }
@@ -174,14 +184,14 @@ public class MdnsHelper {
 
             @Override
             public void onFailure(Exception e) {
-                MdnsBean mdnsBean = new MdnsBean();
-                mdnsBean.ipAddress = ip;
-                mdnsBean.port = serviceInfo.getPort();
-                mdnsBean.serviceType = serviceInfo.getType();
-                mdnsBean.serviceName = serviceInfo.getName();
-                mdnsBean.attributes = new MdnsBean.AttributesDTO();
-                mdnsBean.attributes.errorMsg = e.getMessage();
                 if (null != mdnsListener) {
+                    MdnsBean mdnsBean = new MdnsBean();
+                    mdnsBean.ipAddress = ip;
+                    mdnsBean.port = serviceInfo.getPort();
+                    mdnsBean.serviceType = serviceInfo.getType();
+                    mdnsBean.serviceName = serviceInfo.getName();
+                    mdnsBean.attributes = new MdnsBean.AttributesDTO();
+                    mdnsBean.attributes.errorMsg = e.getMessage();
                     mdnsListener.onServiceResolved(mdnsBean);
                 }
                 resolvedServiceSet.remove(ip);

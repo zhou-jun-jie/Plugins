@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpRequestQueueManager {
-    private static final String TAG = "zjj_http";
+    private static final String TAG = "zjj_mdns";
     private static final int MAX_RETRY_COUNT = 3;
     private static final int REQUEST_INTERVAL_MS = 1000;  // 请求间隔时间，单位为毫秒
 
@@ -72,7 +72,7 @@ public class HttpRequestQueueManager {
                 throw new IOException("Unexpected code " + response);
             }
             successCount.incrementAndGet();
-            Log.d(TAG, "Request succeeded: " + requestWrapper.url);
+            Log.d(TAG, "Request succeeded: " + requestWrapper.url );
             if (requestWrapper.callback != null && response.body() != null) {
                 requestWrapper.callback.onResponse(response.body().string());
             }
@@ -96,6 +96,8 @@ public class HttpRequestQueueManager {
         isProcessing = false;
         if (processingThread != null) {
             processingThread.interrupt();
+            successCount.set(0);
+            failureCount.set(0);
         }
     }
 
